@@ -4,7 +4,7 @@ import pandas as pd
 # Load CSV data
 @st.cache_data
 def load_data():
-    df = pd.read_csv('cardiac_patients.csv')  # Replace with your file path
+    df = pd.read_csv('./cardiac_patients.csv')  # Replace with your file path
     return df
 
 # Main app
@@ -21,7 +21,7 @@ def annotate_row(patient_id, data, comment, category):
     st.session_state.annotations[patient_id] = comment
     data.loc[data['Patient ID'] == patient_id, category] = comment
     data = data.set_index("Patient ID")
-    data.to_csv('cardiac_patients.csv', index=False)  # Save updates to CSV
+    data.to_csv('./cardiac_patients.csv', index=True)  # Save updates to CSV
     st.session_state[category] = ''  # Clear the text area after submission
 
 # Slider for row navigation
