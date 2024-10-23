@@ -1,0 +1,6 @@
+pandas
+numpy 
+PyGithub
+io
+os
+streamlit
