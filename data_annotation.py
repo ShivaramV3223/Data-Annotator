@@ -5,7 +5,7 @@ import io
 import os
 
 # Access the secret from the environment variable
-my_secret_key = os.getenv('TOKEN')
+my_secret_key = st.secrets['TOKEN']
 print(my_secret_key)
 # github initialization
 
