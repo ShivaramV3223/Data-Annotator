@@ -6,7 +6,7 @@ import os
 
 # Access the secret from the environment variable
 my_secret_key = os.getenv('TOKEN')
-
+print(my_secret_key)
 # github initialization
 
 # Replace 'your_token' with your actual personal access token
