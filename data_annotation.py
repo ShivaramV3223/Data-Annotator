@@ -2,11 +2,15 @@ import streamlit as st
 import pandas as pd
 from github import Github
 import io
+import os
+
+# Access the secret from the environment variable
+my_secret_key = os.getenv('TOKEN')
 
 # github initialization
 
 # Replace 'your_token' with your actual personal access token
-g = Github("TOKEN")
+g = Github(my_secret_key)
 
 # Example: Get user information
 repo = g.get_user().get_repo("Data-Annotator")
