@@ -1,6 +1,5 @@
 pandas
 numpy 
 PyGithub==2.4.0
-io
 os
 streamlit
