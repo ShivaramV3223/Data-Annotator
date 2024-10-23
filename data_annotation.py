@@ -1,77 +1,77 @@
 import streamlit as st
 import pandas as pd
+from github import Github
+import io
+
+# github initialization
+
+# Replace 'your_token' with your actual personal access token
+g = Github("TOKEN")
+
+# Example: Get user information
+repo = g.get_user().get_repo("Data-Annotator")
+contents = repo.get_contents('cardiac_patients.csv')
 
 # Load CSV data
 @st.cache_data
 def load_data():
-    df = pd.read_csv('./cardiac_patients.csv')  # Replace with your file path
+    csv_content = contents.decoded_content.decode()
+    df = pd.read_csv(io.StringIO(csv_content))
     return df
 
 # Main app
 st.title("Cardiac Patient Annotation")
+if 'row_idx' not in st.session_state:
+    st.session_state.row_idx = 0
+    
+for i in ['behavior', 'medical', 'lifestyle', 'next_visit', 'diag_test']:
+    if i  not in st.session_state:
+        st.session_state[i] = ''
 
 data = load_data()
 
 # Function to annotate the row
-def annotate_row(patient_id, data, comment, category):
-    if "annotations" not in st.session_state:
-        st.session_state.annotations = {}
+def annotate_row(patient_id, data, annotation):
+    print(annotation)
+    for category in annotation:
+        data.loc[patient_id, category] = annotation[category]
+        st.session_state[category] = ''
+        
+    updated_csv = data.to_csv(index=False)
     
-    # Save the annotation in session state and CSV file
-    st.session_state.annotations[patient_id] = comment
-    data.loc[data['Patient ID'] == patient_id, category] = comment
-    data = data.set_index("Patient ID")
-    data.to_csv('./cardiac_patients.csv', index=True)  # Save updates to CSV
-    st.session_state[category] = ''  # Clear the text area after submission
+    repo.update_file(contents.path, 'file update', updated_csv, contents.sha)# Save updates to CSV
+      # Clear the text area after submission
 
 # Slider for row navigation
 row_idx = st.number_input("Select patient row", min_value=0, max_value=len(data)-1, step=1)
 patient_row = data.iloc[row_idx]
 
+if row_idx != st.session_state.row_idx:
+    for i in ['behavior', 'medical', 'lifestyle', 'next_visit', 'diag_test']:
+        st.session_state[i] = ''
+    
 # Display the row (excluding the last few columns)
 st.subheader(f"Patient ID: {patient_row['Patient ID']}")
 st.write(patient_row[data.columns[:-5]])
 
-# Input for annotation - Behavioral Changes
-if 'Behavioral Changes' not in st.session_state:
-    st.session_state['Behavioral Changes'] = ""
+behavior = st.text_area("Add Behavioral Changes", key = 'behavior')
+medical = st.text_area("Add Medical / Clinical Intervention", key = 'medical')
+lifestyle = st.text_area('Add Lifestyle Changes', key = 'lifestyle')
+next_visit = st.text_area("Add Next Visit", key = 'next_visit')
+diag_test = st.text_area("Add Diagnostic Test", key = 'diag_test')
+# blank = st.text_area("Add blank", value = st.session_state.blank)
 
-behavior = st.text_area("Behavior Action", value=st.session_state['Behavioral Changes'])
-if st.button("Save Behavioral Action"):
-    annotate_row(patient_row['Patient ID'], data, behavior, 'Behavioral Changes')
+annotation = {
+    'Behavioral Changes': behavior,
+    "Medicinal / Clinical Interventions": medical,
+    "Lifestyle Changes" : lifestyle, 
+    'Next Visit': next_visit,
+    'Diagnostic Test': diag_test
+}
 
-# Input for annotation - Medicinal / Clinical Interventions
-if 'Medicinal / Clinical Interventions' not in st.session_state:
-    st.session_state['Medicinal / Clinical Interventions'] = ""
+if st.button("Save All Annotations"):
+    # Update all annotations at once
+    annotate_row(row_idx, data, annotation)
+    # Show a success message
+    st.success(f"Annotations for Patient ID {row_idx} have been saved.")
 
-medicinal = st.text_area("Medicinal / Clinical Interventions", value=st.session_state['Medicinal / Clinical Interventions'])
-if st.button("Save Medicinal Interventions"):
-    annotate_row(patient_row['Patient ID'], data, medicinal, 'Medicinal / Clinical Interventions')
-
-# Input for annotation - Lifestyle Changes
-if 'Lifestyle Changes' not in st.session_state:
-    st.session_state['Lifestyle Changes'] = ""
-
-lifestyle = st.text_area("Lifestyle Changes", value=st.session_state['Lifestyle Changes'])
-if st.button("Save Lifestyle Changes"):
-    annotate_row(patient_row['Patient ID'], data, lifestyle, 'Lifestyle Changes')
-
-# Input for annotation - Next Visit
-if 'Next Visit' not in st.session_state:
-    st.session_state['Next Visit'] = ""
-
-next_visit = st.text_area("Next Visit", value=st.session_state['Next Visit'])
-if st.button("Save Next Visit"):
-    annotate_row(patient_row['Patient ID'],data,  next_visit, 'Next Visit')
-
-# Input for annotation - Diagnostic Test
-if 'Diagnostic Test' not in st.session_state:
-    st.session_state['Diagnostic Test'] = ""
-
-diag_test = st.text_area("Diagnostic Test", value=st.session_state['Diagnostic Test'])
-if st.button("Save Diagnostic Test"):
-    annotate_row(patient_row['Patient ID'],data, diag_test, 'Diagnostic Test')
-
-# # Display all annotations (Optional)
-# st.sidebar.title("Saved Annotations")
-# st.sidebar.write(st.session_state.get("annotations", {}))
