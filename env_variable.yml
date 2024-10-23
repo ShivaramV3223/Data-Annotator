@@ -16,6 +16,6 @@ jobs:
     - name: Run Python script with secrets
       run: |
         echo "Running script with secret..."
-        python my_script.py
+        python data_annotation.py
       env:
         TOKEN: ${{ secrets.TOKEN }}
