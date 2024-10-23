@@ -6,7 +6,7 @@ import os
 
 # Access the secret from the environment variable
 my_secret_key = st.secrets['TOKEN']
-print(my_secret_key)
+# print(my_secret_key)
 # github initialization
 
 # Replace 'your_token' with your actual personal access token
@@ -19,8 +19,8 @@ contents = repo.get_contents('cardiac_patients.csv')
 # Load CSV data
 @st.cache_data
 def load_data():
-    csv_content = contents.decoded_content.decode()
-    df = pd.read_csv(io.StringIO(csv_content))
+    # csv_content = contents.decoded_content.decode()
+    df = pd.read_csv('cardiac_patients.csv')
     return df
 
 # Main app
@@ -42,8 +42,8 @@ def annotate_row(patient_id, data, annotation):
         st.session_state[category] = ''
         
     updated_csv = data.to_csv(index=False)
-    
     repo.update_file(contents.path, 'file update', updated_csv, contents.sha)# Save updates to CSV
+    data.to_csv('cardiac_patients.csv', index = False)
       # Clear the text area after submission
 
 # Slider for row navigation
