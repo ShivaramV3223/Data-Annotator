@@ -43,7 +43,8 @@ def annotate_row(patient_id, data, annotation):
         
     updated_csv = data.to_csv(index=False)
     repo.update_file(contents.path, 'file update', updated_csv, contents.sha)# Save updates to CSV
-    data.to_csv('cardiac_patients.csv', index = False)
+    data = data.set_index("Patient ID")
+    data.to_csv('cardiac_patients.csv')
       # Clear the text area after submission
 
 # Slider for row navigation
